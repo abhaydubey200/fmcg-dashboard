@@ -1,5 +1,6 @@
-pandas
 streamlit
+pandas
+numpy
 plotly
-openai
 openpyxl
+scikit-learn
