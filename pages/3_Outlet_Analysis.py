@@ -1,15 +1,12 @@
 import streamlit as st
-from utils.visualizations import plot_outlets_by_city, plot_outlets_by_type
+import plotly.express as px
 
 st.title("Outlet Analysis")
 
 if 'df' in st.session_state:
     df = st.session_state['df']
-
-    st.subheader("Outlets by City")
-    st.plotly_chart(plot_outlets_by_city(df, "CITY"), use_container_width=True)
-
-    st.subheader("Outlets by Type")
-    st.plotly_chart(plot_outlets_by_type(df, "TYPE"), use_container_width=True)
+    df_outlet = df.groupby('OUTLET_NAME')['AMOUNT'].sum().reset_index()
+    fig = px.bar(df_outlet, x='OUTLET_NAME', y='AMOUNT', title='Sales by Outlet')
+    st.plotly_chart(fig, use_container_width=True)
 else:
-    st.warning("Please upload a dataset first on the Upload Dataset page.")
+    st.warning("Please upload a dataset first on the Upload page.")
