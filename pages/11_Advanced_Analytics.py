@@ -1,71 +1,74 @@
+# pages/11_Advanced_Analytics.py
+
 import streamlit as st
+import pandas as pd
 import plotly.express as px
-
-from utils.column_detector import auto_detect_columns
 from utils.forecasting import prepare_time_series, sales_forecast
+from utils.churn_analysis import detect_churn_outlets
 
-st.set_page_config(page_title="Advanced Analytics", layout="wide")
-st.title("🧠 Advanced Analytics Dashboard")
-
-df = st.session_state.get("df")
-
-if df is None:
-    st.warning("⚠️ Upload dataset first")
-    st.stop()
-
-cols = auto_detect_columns(df)
-
-date_col = cols.get("date")
-sales_col = cols.get("sales")
-
-if date_col is None or sales_col is None:
-    st.error("❌ Date or Sales column not detected")
-    st.info("ℹ️ Required for forecasting: order_date + sales/amount")
-    st.stop()
-
-# ---------- PREPARE TIME SERIES ----------
-ts_df = prepare_time_series(df, date_col, sales_col)
-
-if ts_df is None or ts_df.empty:
-    st.warning("Not enough data for forecasting")
-    st.stop()
-
-# ---------- FORECAST ----------
-forecast_df = sales_forecast(ts_df, periods=6)
-
-# ---------- VISUAL ----------
-st.subheader("📈 Sales Forecast (Next 6 Periods)")
-
-fig = px.line(
-    ts_df,
-    x="ds",
-    y="y",
-    markers=True,
-    title="Historical Sales"
+st.set_page_config(
+    page_title="Advanced Analytics",
+    layout="wide",
+    initial_sidebar_state="expanded"
 )
 
-if forecast_df is not None:
-    fig.add_scatter(
-        x=forecast_df["ds"],
-        y=forecast_df["yhat"],
-        mode="lines+markers",
-        name="Forecast",
-        line=dict(dash="dash")
-    )
+st.title("📊 Advanced Analytics Dashboard")
 
-st.plotly_chart(fig, use_container_width=True)
-
-# ---------- INSIGHTS ----------
-st.subheader("📌 Forecast Insights")
-
-avg_growth = ts_df["y"].pct_change().mean() * 100
-
-st.metric(
-    "Avg Historical Growth %",
-    f"{avg_growth:.2f}%"
+# Sidebar: Upload Dataset
+uploaded_file = st.sidebar.file_uploader(
+    "Upload your dataset (Excel/CSV)", type=["csv", "xlsx"]
 )
 
-st.info(
-    "Forecast is based on recent moving average trend. "
-    "Advanced ML models can be plugged later."
-)
+if uploaded_file is not None:
+    try:
+        # Load dataset safely
+        if uploaded_file.name.endswith(".csv"):
+            df = pd.read_csv(uploaded_file)
+        else:
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+
+        st.success(f"Dataset loaded successfully! Shape: {df.shape}")
+
+        st.header("1️⃣ Sales Forecasting")
+
+        # Detect possible date & value columns
+        date_cols = [col for col in df.columns if "date" in col.lower()]
+        value_cols = [col for col in df.columns if col.lower() in ["amount", "total_quantity", "sales"]]
+
+        if date_cols and value_cols:
+            date_col = st.selectbox("Select Date Column", date_cols)
+            value_col = st.selectbox("Select Value Column", value_cols)
+
+            ts_df = prepare_time_series(df, date_col, value_col)
+            forecast_df = sales_forecast(ts_df, periods=6)
+
+            if forecast_df is not None:
+                fig = px.line(
+                    pd.concat([ts_df.rename(columns={"y": "Actual"}), forecast_df.rename(columns={"yhat": "Forecast"})], axis=0),
+                    x="ds",
+                    y=["y", "yhat"],
+                    labels={"ds": "Date", "value": "Sales"},
+                    title="Sales Forecast"
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.warning("Not enough data for forecasting.")
+        else:
+            st.warning("Dataset must have at least one date column and one numeric value column for forecasting.")
+
+        st.header("2️⃣ Outlet Churn Analysis")
+        if "OUTLET_ID" in df.columns and "ORDER_DATE" in df.columns:
+            churn_results = detect_churn_outlets(df)
+            st.dataframe(churn_results)
+            fig_churn = px.pie(
+                churn_results, names="Churn_Status", values="Count",
+                title="Outlet Churn Distribution"
+            )
+            st.plotly_chart(fig_churn, use_container_width=True)
+        else:
+            st.info("Churn analysis requires 'OUTLET_ID' and 'ORDER_DATE' columns.")
+
+    except Exception as e:
+        st.error(f"Error loading dataset: {e}")
+else:
+    st.info("Please upload a dataset to start advanced analytics.")
