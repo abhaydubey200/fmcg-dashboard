@@ -3,53 +3,74 @@
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
+
 from utils.column_detector import auto_detect_columns
 
 
-def prepare_outlet_features(df):
+def prepare_outlet_features(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Prepare outlet-level features for clustering
+    Create outlet-level aggregated features for clustering.
+    Works with any FMCG dataset.
     """
+
     cols = auto_detect_columns(df)
 
     outlet_col = cols.get("outlet")
     sales_col = cols.get("sales")
     qty_col = cols.get("quantity")
 
-    if not outlet_col:
-        raise ValueError("Outlet column not found")
+    if outlet_col is None:
+        raise ValueError("❌ Outlet column not detected in dataset")
 
-    agg_dict = {}
+    agg = {}
+
     if sales_col:
-        agg_dict[sales_col] = "sum"
+        agg[sales_col] = "sum"
     if qty_col:
-        agg_dict[qty_col] = "sum"
+        agg[qty_col] = "sum"
 
     outlet_df = (
         df
         .groupby(outlet_col)
-        .agg(agg_dict)
+        .agg(agg)
         .reset_index()
     )
 
+    # Rename for consistency
+    rename_map = {}
+    if sales_col:
+        rename_map[sales_col] = "Total_Sales"
+    if qty_col:
+        rename_map[qty_col] = "Total_Quantity"
+
+    outlet_df.rename(columns=rename_map, inplace=True)
+
     # Fill missing numeric values
-    for c in outlet_df.columns:
-        if c != outlet_col:
-            outlet_df[c] = outlet_df[c].fillna(0)
+    for col in outlet_df.select_dtypes(include="number").columns:
+        outlet_df[col] = outlet_df[col].fillna(0)
 
     return outlet_df
 
 
-def segment_outlets(outlet_df, n_clusters=3):
+def segment_outlets(outlet_df: pd.DataFrame, n_clusters: int = 3) -> pd.DataFrame:
     """
-    Apply KMeans clustering on outlet features
+    Perform KMeans clustering on outlet features.
     """
-    feature_cols = outlet_df.select_dtypes(include="number").columns
+
+    feature_cols = outlet_df.select_dtypes(include="number").columns.tolist()
+
+    if len(feature_cols) == 0:
+        raise ValueError("❌ No numeric features available for clustering")
 
     scaler = StandardScaler()
-    X_scaled = scaler.fit_transform(outlet_df[feature_cols])
+    X = scaler.fit_transform(outlet_df[feature_cols])
 
-    model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
-    outlet_df["Segment"] = model.fit_predict(X_scaled)
+    kmeans = KMeans(
+        n_clusters=n_clusters,
+        random_state=42,
+        n_init=10
+    )
+
+    outlet_df["Segment"] = kmeans.fit_predict(X)
 
     return outlet_df
