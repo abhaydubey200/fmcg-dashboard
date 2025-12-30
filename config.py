@@ -1,5 +1,1 @@
-# config.py
-import os
-
-# Gemini API Key
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "YOUR_GEMINI_API_KEY")
+APP_TITLE = "FMCG Executive Intelligence Dashboard"
