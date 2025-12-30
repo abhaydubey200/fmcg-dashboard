@@ -1,20 +1,15 @@
 import streamlit as st
-from utils.data_loader import load_data
-from utils.visualizations import plot_top_categories
+from utils.visualizations import plot_outlets_by_city, plot_outlets_by_type
 
-st.title("🏪 Outlet Analysis Dashboard")
+st.title("Outlet Analysis")
 
-uploaded_file = st.file_uploader("Upload FMCG file", type=["csv","xlsx"], key="outlet")
+if 'df' in st.session_state:
+    df = st.session_state['df']
 
-if uploaded_file:
-    df = load_data(uploaded_file)
-    if df is not None:
-        st.subheader("Top Outlets by Sales Amount")
-        fig = plot_top_categories(df, 'OUTLET_NAME', value_col='AMOUNT', top_n=20)
-        if fig:
-            st.plotly_chart(fig, use_container_width=True)
+    st.subheader("Outlets by City")
+    st.plotly_chart(plot_outlets_by_city(df, "CITY"), use_container_width=True)
 
-        st.subheader("Outlets by City")
-        fig = plot_top_categories(df, 'CITY', value_col='AMOUNT')
-        if fig:
-            st.plotly_chart(fig, use_container_width=True)
+    st.subheader("Outlets by Type")
+    st.plotly_chart(plot_outlets_by_type(df, "TYPE"), use_container_width=True)
+else:
+    st.warning("Please upload a dataset first on the Upload Dataset page.")
