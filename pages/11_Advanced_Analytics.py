@@ -1,78 +1,71 @@
 import streamlit as st
 import plotly.express as px
-from utils.column_detector import auto_detect_columns
-from utils.forecasting import sales_forecast
-from utils.segmentation import outlet_segmentation
-from utils.churn_analysis import churn_risk
 
-st.header("🧠 Advanced Analytics & Predictions")
+from utils.column_detector import auto_detect_columns
+from utils.forecasting import prepare_time_series, sales_forecast
+
+st.set_page_config(page_title="Advanced Analytics", layout="wide")
+st.title("🧠 Advanced Analytics Dashboard")
 
 df = st.session_state.get("df")
+
 if df is None:
-    st.warning("Upload dataset first")
+    st.warning("⚠️ Upload dataset first")
     st.stop()
 
 cols = auto_detect_columns(df)
 
-required = [
-    cols["date"],
-    cols["sales"],
-    cols["outlet"]
-]
+date_col = cols.get("date")
+sales_col = cols.get("sales")
 
-if any(v is None for v in required):
-    st.error("Required analytics columns not detected")
+if date_col is None or sales_col is None:
+    st.error("❌ Date or Sales column not detected")
+    st.info("ℹ️ Required for forecasting: order_date + sales/amount")
     st.stop()
 
-# 📈 Sales Forecast
-st.subheader("📈 Sales Forecast")
+# ---------- PREPARE TIME SERIES ----------
+ts_df = prepare_time_series(df, date_col, sales_col)
 
-hist, future = sales_forecast(
-    df,
-    date_col=cols["date"],
-    sales_col=cols["sales"]
+if ts_df is None or ts_df.empty:
+    st.warning("Not enough data for forecasting")
+    st.stop()
+
+# ---------- FORECAST ----------
+forecast_df = sales_forecast(ts_df, periods=6)
+
+# ---------- VISUAL ----------
+st.subheader("📈 Sales Forecast (Next 6 Periods)")
+
+fig = px.line(
+    ts_df,
+    x="ds",
+    y="y",
+    markers=True,
+    title="Historical Sales"
 )
 
-fig1 = px.line(hist, x=cols["date"], y=cols["sales"], title="Historical Sales")
-fig2 = px.line(future, x=cols["date"], y=cols["sales"], title="Forecasted Sales")
+if forecast_df is not None:
+    fig.add_scatter(
+        x=forecast_df["ds"],
+        y=forecast_df["yhat"],
+        mode="lines+markers",
+        name="Forecast",
+        line=dict(dash="dash")
+    )
 
-st.plotly_chart(fig1, use_container_width=True)
-st.plotly_chart(fig2, use_container_width=True)
+st.plotly_chart(fig, use_container_width=True)
 
-# 🧩 Outlet Segmentation
-st.subheader("🧩 Outlet Segmentation")
+# ---------- INSIGHTS ----------
+st.subheader("📌 Forecast Insights")
 
-seg_df = outlet_segmentation(
-    df,
-    outlet_col=cols["outlet"],
-    sales_col=cols["sales"],
-    orders_col=cols["outlet"]
+avg_growth = ts_df["y"].pct_change().mean() * 100
+
+st.metric(
+    "Avg Historical Growth %",
+    f"{avg_growth:.2f}%"
 )
 
-fig3 = px.scatter(
-    seg_df,
-    x="Total_Sales",
-    y="Order_Count",
-    color="Segment",
-    hover_name=cols["outlet"],
-    title="Outlet Segmentation"
+st.info(
+    "Forecast is based on recent moving average trend. "
+    "Advanced ML models can be plugged later."
 )
-st.plotly_chart(fig3, use_container_width=True)
-
-# ⚠️ Churn Risk
-st.subheader("⚠️ Outlet Churn Risk")
-
-churn_df = churn_risk(
-    df,
-    outlet_col=cols["outlet"],
-    date_col=cols["date"]
-)
-
-fig4 = px.histogram(
-    churn_df,
-    x="Churn_Risk",
-    title="Churn Risk Distribution"
-)
-st.plotly_chart(fig4, use_container_width=True)
-
-st.dataframe(churn_df.sort_values("Days_Since_Last_Order", ascending=False))
