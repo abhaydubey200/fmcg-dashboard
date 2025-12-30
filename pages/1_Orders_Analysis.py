@@ -1,15 +1,17 @@
 import streamlit as st
-from utils.data_loader import load_dataset
-from utils.visualizations import plot_orders_over_time
+import pandas as pd
+from utils.visualizations import plot_orders_over_time, plot_order_state_distribution
 
 st.title("Orders Analysis")
 
-df = load_dataset()
-if df is not None:
-    date_cols = [col for col in df.columns if "DATE" in col.upper()]
-    if date_cols:
-        st.plotly_chart(plot_orders_over_time(df, date_cols[0]), use_container_width=True)
-    else:
-        st.warning("No date column found in the dataset.")
+if 'df' in st.session_state:
+    df = st.session_state['df']
+
+    st.subheader("Orders Over Time")
+    date_col = "ORDER_DATE"  # Adjust based on dataset
+    st.plotly_chart(plot_orders_over_time(df, date_col), use_container_width=True)
+
+    st.subheader("Order State Distribution")
+    st.plotly_chart(plot_order_state_distribution(df, "ORDERSTATE"), use_container_width=True)
 else:
-    st.info("Please upload a dataset to see the analysis.")
+    st.warning("Please upload a dataset first on the Upload Dataset page.")
