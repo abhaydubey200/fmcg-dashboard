@@ -1,22 +1,16 @@
 import streamlit as st
-from utils.data_loader import load_data, detect_columns
-from utils.visualizations import plot_orders_over_time, plot_top_categories
+import pandas as pd
+from utils.visualizations import plot_sales_over_time, plot_sales_by_category
 
-st.title("📈 Sales Analysis Dashboard")
+st.title("Sales Analysis")
 
-uploaded_file = st.file_uploader("Upload FMCG file", type=["csv","xlsx"], key="sales")
+if 'df' in st.session_state:
+    df = st.session_state['df']
 
-if uploaded_file:
-    df = load_data(uploaded_file)
-    if df is not None:
-        date_cols, num_cols, cat_cols = detect_columns(df)
+    st.subheader("Sales Over Time")
+    st.plotly_chart(plot_sales_over_time(df, "ORDER_DATE", "AMOUNT"), use_container_width=True)
 
-        st.subheader("Orders Over Time")
-        if date_cols:
-            st.plotly_chart(plot_orders_over_time(df, date_cols[0]), use_container_width=True)
-
-        st.subheader("Top Categories / SKUs")
-        for col in ['CATEGORY','SKU_PLACED','BRAND']:
-            fig = plot_top_categories(df, col)
-            if fig:
-                st.plotly_chart(fig, use_container_width=True)
+    st.subheader("Sales by Category")
+    st.plotly_chart(plot_sales_by_category(df, "CATEGORY", "AMOUNT"), use_container_width=True)
+else:
+    st.warning("Please upload a dataset first on the Upload Dataset page.")
