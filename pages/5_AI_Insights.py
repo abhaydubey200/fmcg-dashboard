@@ -1,17 +1,14 @@
 import streamlit as st
-from utils.ai_insights import get_ai_insights
+from utils.data_loader import load_dataset
+from utils.ai2_insights import get_ai_insights
 
 st.title("AI Insights")
 
-if "df" in st.session_state:
-    df = st.session_state.df
-    question = st.text_input("Ask a question about your data:")
-    
-    if st.button("Get Insights") and question:
-        try:
-            insights = get_ai_insights(df, question)
-            st.markdown(f"**AI Insights:** {insights}")
-        except Exception as e:
-            st.error(f"AI Insights Error: {e}")
+df = load_dataset()
+if df is not None:
+    question = st.text_input("Ask a question about your dataset")
+    if question:
+        insights = get_ai_insights(df, question)
+        st.write(insights)
 else:
-    st.warning("Please upload the dataset first in the Upload Dataset page.")
+    st.info("Please upload a dataset to get AI insights.")
