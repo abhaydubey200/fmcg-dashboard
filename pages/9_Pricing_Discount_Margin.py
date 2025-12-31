@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-st.title("📊 Pricing, Discount & Margin Dashboard")
+st.title(" Pricing, Discount & Margin Dashboard")
 
 uploaded_file = st.sidebar.file_uploader(
     "Upload your dataset (Excel/CSV)", type=["csv", "xlsx"]
