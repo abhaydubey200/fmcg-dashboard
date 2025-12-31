@@ -1,42 +1,21 @@
 import streamlit as st
-import plotly.express as px
-
 from utils.data_loader import get_dataset
 from utils.column_detector import detect_columns
 from utils.metrics import calculate_kpis
 
-st.set_page_config(page_title="Executive Overview", layout="wide")
-
-st.title("Executive Overview Dashboard")
+st.title(" Executive Overview")
 
 df = get_dataset()
 
 if df is None:
-    st.warning(" Please upload dataset from 'Upload Dataset' page")
+    st.warning("Please upload a dataset first.")
     st.stop()
 
 cols = detect_columns(df)
 kpis = calculate_kpis(df, cols)
 
 c1, c2, c3, c4 = st.columns(4)
-
-c1.metric("Total Sales", f"{kpis['total_sales']:,.0f}")
-c2.metric("Total Orders", kpis["total_orders"])
-c3.metric("Active Outlets", kpis["active_outlets"])
-c4.metric("Avg Order Value", f"{kpis['avg_order_value']:,.0f}")
-
-if cols.get("date") and cols.get("sales"):
-    trend_df = (
-        df.groupby(cols["date"])[cols["sales"]]
-        .sum()
-        .reset_index()
-    )
-
-    fig = px.line(
-        trend_df,
-        x=cols["date"],
-        y=cols["sales"],
-        title=" Sales Trend"
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+c1.metric("Total Sales", kpis["Total Sales"])
+c2.metric("Total Orders", kpis["Total Orders"])
+c3.metric("Active Outlets", kpis["Active Outlets"])
+c4.metric("Avg Order Value", kpis["Avg Order Value"])
