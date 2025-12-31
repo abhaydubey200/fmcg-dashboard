@@ -1,32 +1,54 @@
 import streamlit as st
-from utils.column_detector import auto_detect_columns
-from utils.data_processing import preprocess
-from utils.metrics import *
-from utils.visualizations import *
+import plotly.express as px
 
-st.header(" Executive Overview")
+from utils.data_loader import get_dataset
+from utils.column_detector import detect_columns
+from utils.kpi_engine import calculate_kpis
 
-df = st.session_state.get("df")
+st.set_page_config(page_title="Executive Overview", layout="wide")
+
+st.title("Executive Overview (CXO Dashboard)")
+
+df = get_dataset()
+
 if df is None:
-    st.warning("Upload dataset first")
+    st.warning("Please upload a dataset first.")
     st.stop()
 
-cols = auto_detect_columns(df)
+cols = detect_columns(df)
+kpis = calculate_kpis(df, cols)
 
-df = preprocess(df, cols["date"])
+# ---------- KPI ROW ----------
+c1, c2, c3, c4, c5, c6 = st.columns(6)
 
-col1, col2, col3 = st.columns(3)
-col1.metric("Total Sales", f"{kpi_total_sales(df, cols['sales']):,.0f}")
-col2.metric("Orders", kpi_orders(df))
-col3.metric("Avg Order Value", f"{kpi_aov(df, cols['sales']):,.0f}")
+c1.metric(" Total Sales", f"₹ {kpis['total_sales']:,.0f}")
+c2.metric(" Active Outlets", kpis["active_outlets"])
+c3.metric(" Total Quantity", f"{kpis['total_qty']:,.0f}")
+c4.metric(" Avg Order Value", f"₹ {kpis['aov']:,.0f}")
+c5.metric(" Discount %", f"{kpis['discount_pct']}%")
+c6.metric(" Orders", df[cols["order_id"]].nunique() if cols.get("order_id") else 0)
 
-st.plotly_chart(
-    line_sales_trend(df, cols["date"], cols["sales"]),
-    use_container_width=True
-)
+st.divider()
 
-if cols["brand"]:
-    st.plotly_chart(
-        bar_top(df, cols["brand"], cols["sales"], "Top Brands"),
-        use_container_width=True
+# ---------- SALES TREND ----------
+date_col = cols.get("date")
+sales_col = cols.get("sales")
+
+if date_col and sales_col:
+    trend = (
+        df.groupby(pd.to_datetime(df[date_col]).dt.to_period("M"))[sales_col]
+        .sum()
+        .reset_index()
     )
+    trend[date_col] = trend[date_col].astype(str)
+
+    fig = px.line(
+        trend,
+        x=date_col,
+        y=sales_col,
+        title=" Sales Trend (Monthly)"
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info(" Date column not detected for trend analysis.")
