@@ -1,34 +1,16 @@
 import streamlit as st
-import pandas as pd
+from utils.data_loader import load_dataset, save_dataset
 
-SESSION_KEY = "fmcg_df"
+st.title(" Upload FMCG Dataset")
 
+uploaded_file = st.file_uploader(
+    "Upload CSV or Excel file",
+    type=["csv", "xls", "xlsx"]
+)
 
-def load_dataset(uploaded_file):
-    """Load CSV or Excel file"""
-    try:
-        if uploaded_file.name.endswith(".csv"):
-            df = pd.read_csv(uploaded_file)
-        elif uploaded_file.name.endswith((".xls", ".xlsx")):
-            df = pd.read_excel(uploaded_file)
-        else:
-            st.error("Unsupported file format")
-            return None
-        return df
-    except Exception as e:
-        st.error(f"File load failed: {e}")
-        return None
-
-
-def save_dataset(df):
-    """Save dataset to session"""
-    st.session_state[SESSION_KEY] = df
-
-
-def get_dataset():
-    """Safely get dataset from session"""
-    df = st.session_state.get(SESSION_KEY)
-    if df is None:
-        st.warning("⚠️ Please upload dataset first")
-        return None
-    return df
+if uploaded_file:
+    df = load_dataset(uploaded_file)
+    if df is not None:
+        save_dataset(df)
+        st.success(" Dataset uploaded successfully")
+        st.dataframe(df.head())
