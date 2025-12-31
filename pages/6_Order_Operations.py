@@ -1,24 +1,10 @@
 import streamlit as st
-from utils.column_detector import auto_detect_columns
-from utils.visualizations import bar_top
+from utils.data_loader import get_dataset
 
-st.header(" Order & Operations Dashboard")
+st.title(" Order Operations")
 
-df = st.session_state.get("df")
+df = get_dataset()
 if df is None:
-    st.warning("Upload dataset first")
     st.stop()
 
-cols = auto_detect_columns(df)
-
-if "ORDERSTATE" in df.columns:
-    st.plotly_chart(
-        bar_top(df, "ORDERSTATE", cols["sales"], "Order State Performance"),
-        use_container_width=True
-    )
-
-if "ORDERTYPE" in df.columns:
-    st.plotly_chart(
-        bar_top(df, "ORDERTYPE", cols["sales"], "Order Type Performance"),
-        use_container_width=True
-    )
+st.dataframe(df.head())
