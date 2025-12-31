@@ -7,16 +7,15 @@ from utils.metrics import calculate_kpis
 
 st.set_page_config(page_title="Executive Overview", layout="wide")
 
-st.title(" Executive Overview (CXO Dashboard)")
+st.title("Executive Overview Dashboard")
 
 df = get_dataset()
 
 if df is None:
-    st.warning(" Please upload a dataset from 'Upload Dataset' page.")
+    st.warning(" Please upload dataset from 'Upload Dataset' page")
     st.stop()
 
 cols = detect_columns(df)
-
 kpis = calculate_kpis(df, cols)
 
 c1, c2, c3, c4 = st.columns(4)
@@ -26,19 +25,18 @@ c2.metric("Total Orders", kpis["total_orders"])
 c3.metric("Active Outlets", kpis["active_outlets"])
 c4.metric("Avg Order Value", f"{kpis['avg_order_value']:,.0f}")
 
-# Sales Trend
 if cols.get("date") and cols.get("sales"):
-    trend = (
+    trend_df = (
         df.groupby(cols["date"])[cols["sales"]]
         .sum()
         .reset_index()
     )
 
     fig = px.line(
-        trend,
+        trend_df,
         x=cols["date"],
         y=cols["sales"],
-        title="Sales Trend Over Time"
+        title=" Sales Trend"
     )
 
     st.plotly_chart(fig, use_container_width=True)
