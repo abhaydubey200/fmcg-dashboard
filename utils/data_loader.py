@@ -1,34 +1,34 @@
-import pandas as pd
 import streamlit as st
+import pandas as pd
+
+SESSION_KEY = "fmcg_df"
 
 
 def load_dataset(uploaded_file):
-    """
-    Load CSV or Excel and store in session_state
-    """
+    """Load CSV or Excel file"""
     try:
         if uploaded_file.name.endswith(".csv"):
             df = pd.read_csv(uploaded_file)
-        elif uploaded_file.name.endswith((".xlsx", ".xls")):
+        elif uploaded_file.name.endswith((".xls", ".xlsx")):
             df = pd.read_excel(uploaded_file)
         else:
             st.error("Unsupported file format")
             return None
-
-        st.session_state["fmcg_df"] = df
         return df
-
     except Exception as e:
-        st.error(f"Error loading dataset: {e}")
+        st.error(f"File load failed: {e}")
         return None
+
+
+def save_dataset(df):
+    """Save dataset to session"""
+    st.session_state[SESSION_KEY] = df
 
 
 def get_dataset():
-    """
-    Used by ALL pages except upload page
-    """
-    if "fmcg_df" not in st.session_state:
-        st.warning(" Please upload a dataset from the Upload page.")
+    """Safely get dataset from session"""
+    df = st.session_state.get(SESSION_KEY)
+    if df is None:
+        st.warning("⚠️ Please upload dataset first")
         return None
-
-    return st.session_state["fmcg_df"]
+    return df
