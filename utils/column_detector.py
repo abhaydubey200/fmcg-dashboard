@@ -1,22 +1,29 @@
-def detect_column(columns, keywords):
-    for col in columns:
-        for key in keywords:
-            if key in col.lower():
-                return col
-    return None
+def detect_columns(df):
+    """
+    Automatically detect common FMCG columns
+    Works with ANY dataset (no hard dependency)
+    """
 
+    columns = [c.lower() for c in df.columns]
 
-def auto_detect_columns(df):
-    cols = df.columns
+    def find(keys):
+        for col in df.columns:
+            for k in keys:
+                if k in col.lower():
+                    return col
+        return None
 
     return {
-        "date": detect_column(cols, ["date", "order_date"]),
-        "sales": detect_column(cols, ["amount", "sales", "value"]),
-        "quantity": detect_column(cols, ["qty", "quantity"]),
-        "sku": detect_column(cols, ["sku", "product"]),
-        "brand": detect_column(cols, ["brand"]),
-        "city": detect_column(cols, ["city"]),
-        "state": detect_column(cols, ["state"]),
-        "outlet": detect_column(cols, ["outlet"]),
-        "rep": detect_column(cols, ["user", "salesman", "rep"])
+        "date": find(["date", "order_date", "created"]),
+        "sales": find(["amount", "sales", "revenue", "value"]),
+        "quantity": find(["qty", "quantity", "cases", "kg", "pieces"]),
+        "order_id": find(["order_id", "order"]),
+        "outlet": find(["outlet", "store", "retailer"]),
+        "city": find(["city"]),
+        "state": find(["state", "region"]),
+        "sku": find(["sku", "product"]),
+        "brand": find(["brand"]),
+        "warehouse": find(["warehouse", "depot"]),
+        "sales_rep": find(["user", "rep", "salesman", "employee"]),
+        "order_status": find(["status", "state"])
     }
