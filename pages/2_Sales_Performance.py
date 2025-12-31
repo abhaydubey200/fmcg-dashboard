@@ -3,7 +3,7 @@ from utils.column_detector import auto_detect_columns
 from utils.data_processing import preprocess
 from utils.visualizations import line_sales_trend, bar_top
 
-st.header("📈 Sales Performance Dashboard")
+st.header(" Sales Performance Dashboard")
 
 df = st.session_state.get("df")
 if df is None:
