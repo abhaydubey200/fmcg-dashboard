@@ -1,5 +1,4 @@
 import pandas as pd
-
 def safe_sum(df, col):
     return df[col].sum() if col and col in df else 0
 
