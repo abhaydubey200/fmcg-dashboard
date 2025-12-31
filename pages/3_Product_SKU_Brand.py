@@ -3,32 +3,27 @@ from utils.data_loader import get_dataset
 from utils.column_detector import auto_detect_columns
 from utils.visualizations import bar_top
 
-st.header(" Product / SKU / Brand Dashboard")
+st.title(" Product / SKU / Brand")
 
-# ---- Load dataset safely from session ----
 df = get_dataset()
 if df is None:
     st.stop()
 
-# ---- Auto detect columns ----
 cols = auto_detect_columns(df)
 
-# ---- SKU Sales ----
-if cols.get("sku") and cols.get("sales"):
+if cols.get("sku"):
     st.plotly_chart(
         bar_top(df, cols["sku"], cols["sales"], "Top SKUs"),
         use_container_width=True
     )
 
-# ---- Brand Contribution ----
-if cols.get("brand") and cols.get("sales"):
+if cols.get("brand"):
     st.plotly_chart(
         bar_top(df, cols["brand"], cols["sales"], "Brand Contribution"),
         use_container_width=True
     )
 
-# ---- SKU Quantity ----
-if cols.get("sku") and cols.get("quantity"):
+if cols.get("quantity"):
     st.plotly_chart(
         bar_top(df, cols["sku"], cols["quantity"], "Top SKUs by Quantity"),
         use_container_width=True
