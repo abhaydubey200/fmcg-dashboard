@@ -15,7 +15,8 @@ cols = detect_columns(df)
 kpis = calculate_kpis(df, cols)
 
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Total Sales", kpis["Total Sales"])
-c2.metric("Total Orders", kpis["Total Orders"])
-c3.metric("Active Outlets", kpis["Active Outlets"])
-c4.metric("Avg Order Value", kpis["Avg Order Value"])
+
+c1.metric("Total Sales", f"{kpis['total_sales']:,.0f}")
+c2.metric("Total Orders", f"{kpis['total_orders']:,}")
+c3.metric("Active Outlets", f"{kpis['active_outlets']:,}")
+c4.metric("Avg Order Value", f"{kpis['avg_order_value']:,.0f}")
