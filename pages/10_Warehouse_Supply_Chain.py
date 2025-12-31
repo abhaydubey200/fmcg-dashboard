@@ -7,7 +7,7 @@ import pandas as pd
 from utils.column_detector import auto_detect_columns
 
 st.set_page_config(page_title="Warehouse & Supply Chain", layout="wide")
-st.title("🏭 Warehouse & Supply Chain Performance")
+st.title(" Warehouse & Supply Chain Performance")
 
 # Load dataset
 df = st.session_state.get("df")
