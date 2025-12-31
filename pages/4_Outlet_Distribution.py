@@ -1,24 +1,14 @@
 import streamlit as st
-from utils.column_detector import auto_detect_columns
+from utils.data_loader import get_dataset
 from utils.visualizations import bar_top
 
-st.header(" Outlet & Distribution Dashboard")
+st.title(" Outlet Distribution")
 
-df = st.session_state.get("df")
+df = get_dataset()
 if df is None:
-    st.warning("Upload dataset first")
     st.stop()
 
-cols = auto_detect_columns(df)
-
-if cols["outlet"]:
-    st.plotly_chart(
-        bar_top(df, cols["outlet"], cols["sales"], "Top Outlets"),
-        use_container_width=True
-    )
-
-if cols["city"]:
-    st.plotly_chart(
-        bar_top(df, cols["city"], cols["sales"], "Outlet Sales by City"),
-        use_container_width=True
-    )
+st.plotly_chart(
+    bar_top(df, "outlet", "sales", "Sales by Outlet"),
+    use_container_width=True
+)
