@@ -9,13 +9,13 @@ from utils.segmentation import (
 )
 
 st.set_page_config(page_title="Outlet Segmentation", layout="wide")
-st.title("🏪 Outlet Segmentation Dashboard")
+st.title(" Outlet Segmentation Dashboard")
 
 # Load dataset from session
 df = st.session_state.get("df")
 
 if df is None:
-    st.warning("⚠️ Please upload dataset from Upload page")
+    st.warning(" Please upload dataset from Upload page")
     st.stop()
 
 # Prepare features
@@ -30,7 +30,7 @@ clusters = st.slider("Select Number of Segments", 2, 6, 3)
 
 segmented_df = segment_outlets(outlet_df, clusters)
 
-st.subheader("📋 Outlet Segments")
+st.subheader("Outlet Segments")
 st.dataframe(segmented_df, use_container_width=True)
 
 # Visualization
@@ -48,6 +48,6 @@ if len(num_cols) >= 2:
     st.plotly_chart(fig, use_container_width=True)
 
 # Segment Summary
-st.subheader("📊 Segment Summary")
+st.subheader(" Segment Summary")
 summary = segmented_df.groupby("Segment")[num_cols].mean().round(2)
 st.dataframe(summary, use_container_width=True)
