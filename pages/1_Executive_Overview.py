@@ -4,7 +4,7 @@ from utils.data_processing import preprocess
 from utils.metrics import *
 from utils.visualizations import *
 
-st.header("📊 Executive Overview")
+st.header(" Executive Overview")
 
 df = st.session_state.get("df")
 if df is None:
