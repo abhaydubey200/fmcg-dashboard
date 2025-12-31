@@ -1,18 +1,16 @@
 import streamlit as st
-from utils.data_loader import load_dataset
+from utils.data_loader import load_dataset, save_dataset
 
-st.set_page_config(page_title="Upload Dataset", layout="wide")
 st.title(" Upload FMCG Dataset")
 
 uploaded_file = st.file_uploader(
     "Upload CSV or Excel file",
-    type=["csv", "xlsx", "xls"]
+    type=["csv", "xls", "xlsx"]
 )
 
 if uploaded_file:
     df = load_dataset(uploaded_file)
-
     if df is not None:
-        st.success(" Dataset loaded successfully")
-        st.write("Preview:")
+        save_dataset(df)
+        st.success(" Dataset uploaded successfully")
         st.dataframe(df.head())
