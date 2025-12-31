@@ -1,43 +1,38 @@
-import pandas as pd
-
-
 def calculate_kpis(df, cols):
     """
-    Generic KPI engine for FMCG datasets
-    Works even if some columns are missing
+    Production-grade KPI calculator
+    Safe for any FMCG dataset
     """
 
-    kpis = {}
+    kpis = {
+        "total_sales": 0,
+        "total_orders": 0,
+        "active_outlets": 0,
+        "avg_order_value": 0,
+        "total_quantity": 0,
+    }
 
     # Total Sales
     if cols.get("sales"):
-        kpis["Total Sales"] = round(df[cols["sales"]].sum(), 2)
-    else:
-        kpis["Total Sales"] = 0
+        kpis["total_sales"] = round(df[cols["sales"]].sum(), 2)
 
-    # Orders Count
+    # Total Orders
     if cols.get("order_id"):
-        kpis["Total Orders"] = df[cols["order_id"]].nunique()
+        kpis["total_orders"] = df[cols["order_id"]].nunique()
     else:
-        kpis["Total Orders"] = len(df)
+        kpis["total_orders"] = len(df)
 
     # Active Outlets
     if cols.get("outlet"):
-        kpis["Active Outlets"] = df[cols["outlet"]].nunique()
-    else:
-        kpis["Active Outlets"] = 0
+        kpis["active_outlets"] = df[cols["outlet"]].nunique()
 
-    # Average Order Value
+    # Avg Order Value
     if cols.get("sales") and cols.get("order_id"):
-        orders = df.groupby(cols["order_id"])[cols["sales"]].sum()
-        kpis["Avg Order Value"] = round(orders.mean(), 2)
-    else:
-        kpis["Avg Order Value"] = 0
+        order_values = df.groupby(cols["order_id"])[cols["sales"]].sum()
+        kpis["avg_order_value"] = round(order_values.mean(), 2)
 
     # Total Quantity
     if cols.get("quantity"):
-        kpis["Total Quantity"] = round(df[cols["quantity"]].sum(), 2)
-    else:
-        kpis["Total Quantity"] = 0
+        kpis["total_quantity"] = round(df[cols["quantity"]].sum(), 2)
 
     return kpis
