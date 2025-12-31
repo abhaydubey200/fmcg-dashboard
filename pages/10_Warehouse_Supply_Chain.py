@@ -13,7 +13,7 @@ st.title("🏭 Warehouse & Supply Chain Performance")
 df = st.session_state.get("df")
 
 if df is None:
-    st.warning("⚠️ Please upload dataset from Upload page")
+    st.warning(" Please upload dataset from Upload page")
     st.stop()
 
 # Detect columns
@@ -26,12 +26,12 @@ asset_col = cols.get("asset_owned")
 
 # -------- VALIDATION --------
 if warehouse_col is None:
-    st.error("❌ Warehouse column not detected in dataset")
-    st.info("ℹ️ Expected names: warehouse, warehouse_name, depot, dc")
+    st.error(" Warehouse column not detected in dataset")
+    st.info(" Expected names: warehouse, warehouse_name, depot, dc")
     st.stop()
 
 # -------- KPI SECTION --------
-st.subheader("📌 Supply Chain KPIs")
+st.subheader(" Supply Chain KPIs")
 
 kpi1, kpi2, kpi3 = st.columns(3)
 
@@ -60,7 +60,7 @@ with kpi3:
         st.metric("Total Quantity", "N/A")
 
 # -------- WAREHOUSE PERFORMANCE --------
-st.subheader("📊 Warehouse-wise Performance")
+st.subheader(" Warehouse-wise Performance")
 
 group_cols = [warehouse_col]
 agg_map = {}
@@ -97,7 +97,7 @@ if sales_col:
 
 # -------- ASSET UTILIZATION --------
 if asset_col:
-    st.subheader("🏗 Asset Utilization")
+    st.subheader(" Asset Utilization")
 
     asset_df = (
         df
@@ -116,4 +116,4 @@ if asset_col:
     )
     st.plotly_chart(fig2, use_container_width=True)
 else:
-    st.info("ℹ️ Asset ownership data not available in this dataset")
+    st.info(" Asset ownership data not available in this dataset")
