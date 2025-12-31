@@ -20,7 +20,7 @@ def prepare_outlet_features(df: pd.DataFrame) -> pd.DataFrame:
     qty_col = cols.get("quantity")
 
     if outlet_col is None:
-        raise ValueError("❌ Outlet column not detected in dataset")
+        raise ValueError(" Outlet column not detected in dataset")
 
     agg = {}
 
@@ -60,7 +60,7 @@ def segment_outlets(outlet_df: pd.DataFrame, n_clusters: int = 3) -> pd.DataFram
     feature_cols = outlet_df.select_dtypes(include="number").columns.tolist()
 
     if len(feature_cols) == 0:
-        raise ValueError("❌ No numeric features available for clustering")
+        raise ValueError(" No numeric features available for clustering")
 
     scaler = StandardScaler()
     X = scaler.fit_transform(outlet_df[feature_cols])
