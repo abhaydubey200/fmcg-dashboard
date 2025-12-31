@@ -1,29 +1,35 @@
-def detect_columns(df):
+def auto_detect_columns(df):
     """
-    Automatically detect common FMCG columns
-    Works with ANY dataset (no hard dependency)
+    Auto-detect FMCG dataset columns safely.
+    Works with ANY company data.
     """
 
-    columns = [c.lower() for c in df.columns]
+    columns = {c.lower(): c for c in df.columns}
 
     def find(keys):
-        for col in df.columns:
-            for k in keys:
-                if k in col.lower():
-                    return col
+        for k in keys:
+            for col in columns:
+                if k in col:
+                    return columns[col]
         return None
 
     return {
-        "date": find(["date", "order_date", "created"]),
-        "sales": find(["amount", "sales", "revenue", "value"]),
-        "quantity": find(["qty", "quantity", "cases", "kg", "pieces"]),
+        "date": find(["date", "order_date", "bill_date"]),
+        "sales": find(["amount", "sales", "net_amount", "ex_fact_amount"]),
+        "quantity": find(["quantity", "qty", "cases", "kg"]),
         "order_id": find(["order_id", "order"]),
         "outlet": find(["outlet", "store", "retailer"]),
         "city": find(["city"]),
-        "state": find(["state", "region"]),
-        "sku": find(["sku", "product"]),
+        "state": find(["state"]),
         "brand": find(["brand"]),
-        "warehouse": find(["warehouse", "depot"]),
-        "sales_rep": find(["user", "rep", "salesman", "employee"]),
-        "order_status": find(["status", "state"])
+        "sku": find(["sku", "product"]),
+        "category": find(["category"]),
+        "warehouse": find(["warehouse"]),
+        "sales_rep": find(["user", "salesman", "rep"]),
+        "order_state": find(["orderstate", "status"]),
+        "discount": find(["discount"]),
     }
+
+
+# BACKWARD COMPATIBILITY (VERY IMPORTANT)
+detect_columns = auto_detect_columns
