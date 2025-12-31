@@ -7,7 +7,7 @@ st.set_page_config(
 )
 
 st.title(APP_TITLE)
-st.markdown("📊 **Production-Grade FMCG Business Intelligence System**")
+st.markdown(" **Production-Grade FMCG Business Intelligence System**")
 
 if "df" not in st.session_state:
-    st.warning("⬅️ Please upload a dataset from the Upload page")
+    st.warning(" Please upload a dataset from the Upload page")
